@@ -43,7 +43,7 @@ def add_breaks(text):
     # so currently this just adds a break to the single line that is returned.
     #
     # In future we will remove cfn-flip and support multiline in yaml so leaving it in
-    
+
     return "".join([line+" <br>" for line in text.splitlines()])
 
 def strip_newlines(text):
@@ -55,45 +55,57 @@ func_dict = {
     "strip_newlines": strip_newlines
 }
 
-TEMPLATE = """# {{ name }}
+TEMPLATE = """
 ## Description
+
 {{ description }}
-
 ### Parameters
-The list of parameters for this template:
 
+{% if parameters %}
 | Parameter        | Type   | Default   | Description |
 |------------------|--------|-----------|-------------|
 {% for parameter in parameters %}
 | {{ parameter }} | {{ parameters[parameter].Type }} | {% if parameters[parameter].Default %}{{ parameters[parameter].Default}}{% endif %} | {% if parameters[parameter].Description %}{{ strip_newlines(parameters[parameter].Description) }}{% endif %} |
 {% endfor %}
+{% else %}
+*No parameters defined.*
+{% endif %}
 
 ### Resources
-The list of resources this template creates:
 
+{% if resources %}
 | Resource         | Type   |
 |------------------|--------|
 {% for resource in resources %}
 | {{ resource }} | {{ resources[resource].Type }} |
 {% endfor %}
+{% else %}
+*No resources defined.*
+{% endif %}
 
 ### Outputs
-The list of outputs this template exposes:
 
+{% if outputs %}
 | Output           | Description   |
 |------------------|---------------|
 {% for output in outputs %}
 | {{ output }} | {% if outputs[output].Description %}{{ strip_newlines(outputs[output].Description) }}{% endif %} |
 {% endfor %}
+{% else %}
+*No outputs defined.*
+{% endif %}
 """
 
 CHILD_TEMPLATE = """{% extends baseTemplate %}
 {% block description %}
 ## Description
+
 {{ description }}{% endblock %}
 
 {% block parameters %}
 ### Parameters
+
+{% if parameters %}
 The list of parameters for this template:
 
 | Parameter        | Type   | Default   | Description |
@@ -101,10 +113,15 @@ The list of parameters for this template:
 {% for parameter in parameters %}
 | {{ parameter }} | {{ parameters[parameter].Type }} | {% if parameters[parameter].Default %}{{ parameters[parameter].Default}}{% endif %} | {% if parameters[parameter].Description %}{{ strip_newlines(parameters[parameter].Description) }}{% endif %} |
 {% endfor %}
+{% else %}
+*No parameters defined.*
+{% endif %}
 {% endblock %}
 
 {% block resources %}
 ### Resources
+
+{% if resources %}
 The list of resources this template creates:
 
 | Resource         | Type   |
@@ -112,17 +129,23 @@ The list of resources this template creates:
 {% for resource in resources %}
 | {{ resource }} | {{ resources[resource].Type }} |
 {% endfor %}
+{% else %}
+*No resources defined.*
+{% endif %}
 {% endblock %}
 
 {% block outputs %}
 ### Outputs
-The list of outputs this template exposes:
 
+{% if outputs %}
 | Output           | Description   |
 |------------------|---------------|
 {% for output in outputs %}
 | {{ output }} | {% if outputs[output].Description %}{{ strip_newlines(outputs[output].Description) }}{% endif %} |
 {% endfor %}
+{% else %}
+*No outputs defined.*
+{% endif %}
 {% endblock %}
 """
 
